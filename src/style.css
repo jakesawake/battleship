@@ -1,3 +1,125 @@
-body {
-  background-color: black;
+html {
+  background-image: linear-gradient(to bottom, #373b44, #4286f4);
+}
+
+.container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  flex-direction: column;
+}
+
+h1 {
+  background: linear-gradient(to bottom, #e4cda1, #2e6db5);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.header-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.game-area-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 20vh;
+}
+
+.gameboard-container {
+  width: 70vmin;
+  height: 70vmin;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+}
+
+.square {
+  width: 6.5vmin;
+  height: 6.5vmin;
+  border: 1px solid black;
+  box-sizing: border-box;
+}
+
+.labels {
+  width: 5vmin;
+  height: 4vmin;
+  font-size: 20px;
+  box-sizing: border-box;
+}
+
+.number-labels {
+  display: flex;
+  justify-content: center;
+  width: 6.5vmin;
+  height: 6.5vmin;
+  font-size: 20px;
+  box-sizing: border-box;
+  margin-top: 5px;
+}
+
+.form-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: fixed;
+  inset: 0; /* shorthand for top, right, bottom, left: 0 */
+  margin: auto; /* automatically calculates space to center*/
+  width: 100vw; /* prevents the form from expanding to 100% width */
+  height: 100vh;
+  z-index: 1000;
+  backdrop-filter: blur(5px);
+}
+
+.player-form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+
+.submit-btn {
+  width: 70px;
+  height: 30px;
+}
+
+.personal-string-container {
+  font-size: 20px;
+  margin-bottom: 20px;
+  background-image: linear-gradient(to right, #0077be, #0099cc, #00bfff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  display: inline-block;
+}
+
+svg {
+  width: 20vh;
+  height: 10vh;
+}
+
+.ship-container {
+  width: fit-content;
+}
+
+.ship-outer-container {
+  display: flex;
+  flex-direction: column;
+}
+
+/* NOTE: moving hidden class to the very bottom of the css file
+   so that When two CSS rules have equal specificity, the browser applies the one that
+   appears last in the stylesheet. It's called the cascade — that's the "C" in CSS
+   (Cascading Style Sheets). Later rules win ties. */
+.hidden {
+  display: none;
 }
