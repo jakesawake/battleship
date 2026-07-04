@@ -116,6 +116,15 @@ svg {
   flex-direction: column;
 }
 
+/* removable highlight class for occupied ships on the gameboard*/
+.highlight-red {
+  background-color: red;
+}
+/* css classed to change opacity to signal that the ship has already been placed */
+.placed {
+  opacity: 0.2;
+}
+
 /* NOTE: moving hidden class to the very bottom of the css file
    so that When two CSS rules have equal specificity, the browser applies the one that
    appears last in the stylesheet. It's called the cascade — that's the "C" in CSS
