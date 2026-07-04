@@ -1,16 +1,5 @@
 import { Ship } from "./ship-class";
 
-// player blueprint
-// constructor to construct the players
-// - taking their player name so that we can build dynamic strings using
-// the players name ie. 'Jake sunked the opponents Carrier!'
-// - taking the players current gameboard
-// - boolean for if it's the player's turn
-// - array of Ship object instances that belong to each player
-// (length is determined in when Ship class constructor is called)
-// method for the attack logic of the human player
-// wrapper that takes the players gameBoard & coordinates to call
-// the receiveAttack() method that gameBoard has
 class Player {
   constructor(name, gameboard) {
     this.name = name;
@@ -45,6 +34,20 @@ class ComputerPlayer extends Player {
     let letter = this.#randomLetter();
     let number = this.#randomNumber();
     return letter + number;
+  }
+
+  computerGameboard() {
+    for (const ship of this.ships) {
+      while (true) {
+        try {
+          let randomlyGeneratedCoord = this.#generateCoordinate();
+          this.gameboard.placeShip(randomlyGeneratedCoord, ship);
+          break;
+        } catch (error) {
+          console.log(error.message);
+        }
+      }
+    }
   }
 
   computerAttack(gameBoard) {
