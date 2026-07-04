@@ -9,32 +9,40 @@ class Gameboard {
   }
 
   #isValidCoordinate(coordinates) {
-    const [letter, number] = coordinates;
+    const letter = coordinates[0];
+    const number = parseInt(coordinates.slice(1));
     return letter >= "a" && letter <= "j" && number >= 0 && number <= 10;
   }
 
-  placeShip(coordinates, ship, orientation) {
-    if (this.#isValidCoordinate(coordinates)) {
-      let number = parseInt(coordinates.slice(1));
-      if (orientation === "horizontal") {
-        for (let i = 0; i < ship.length; i++) {
-          console.log(i);
-          this.position.set(coordinates[0] + (number + i), ship);
-        }
-      } else if (orientation === "vertical") {
-        let letterUnicode = coordinates.charCodeAt(0);
-        for (let i = 0; i < ship.length; i++) {
-          console.log(i);
-          this.position.set(
-            String.fromCharCode(letterUnicode + i) + number,
-            ship,
-          );
-        }
+  placeShip(coordinates, ship) {
+    const validCoordinates = [];
+    const coordLetterUnicode = coordinates.charCodeAt(0);
+    const coordLetter = coordinates[0];
+    const coordNumber = parseInt(coordinates.slice(1));
+    for (let i = 0; i < ship.length; i++) {
+      if (ship.orientation === "horizontal") {
+        let shipCoordHorizontal = coordLetter + (coordNumber + i);
+        validCoordinates.push(shipCoordHorizontal);
+      } else if (ship.orientation === "vertical") {
+        let shipCoordVertical =
+          String.fromCharCode(coordLetterUnicode + i) + coordNumber;
+        validCoordinates.push(shipCoordVertical);
       }
+    }
+    for (const coord of validCoordinates) {
+      if (!this.#isValidCoordinate(coord)) {
+        throw new Error("The ship placed is not within bounds, try again");
+      } else if (this.position.has(coord)) {
+        throw new Error(
+          "There is already a ship here, try placing it elsewhere!",
+        );
+      }
+    }
+    for (const validCoord of validCoordinates) {
+      this.position.set(validCoord, ship);
     }
   }
 
-  // coordinates take a string to recieve attack e.g "B7"
   receiveAttack(coordinates) {
     if (!this.#isValidCoordinate(coordinates)) {
       throw new Error("The attack is out of bounds!");
