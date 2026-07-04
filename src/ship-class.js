@@ -1,11 +1,3 @@
-// ship class blueprint
-// constructor for creating the battleship pieces
-// initial parameters include the ship name and the length of the ship
-// additional properties of the class include a hit counter and the
-// default orientation that it's set to (horizontal)
-// toggle orientation function to change it from horizontal to vertical on function call
-// hit function to increment the amount of hits a ship has taken
-// returning the evaluation of the condition, either true or false will be returned
 class Ship {
   constructor(name, length) {
     this.name = name;
