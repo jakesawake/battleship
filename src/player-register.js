@@ -1,10 +1,5 @@
 import { container } from "./main";
 
-// - display the player greeting screen
-// - blur out the background
-// - make it appear as an overlay over the battleship board
-// - playerGreeting function to get users name for creating new player object
-// - passing in callback function "uponRegistering" to handle creating the new player
 function playerGreeting(uponRegistering) {
   const formContainer = document.createElement("div");
   formContainer.classList.add("form-container");
