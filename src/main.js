@@ -1,44 +1,32 @@
 import "./style.css";
 import { playerGreeting } from "./player-register";
-import { Player } from "./player-class";
+import { ComputerPlayer, Player } from "./player-class";
 import { placeShips } from "./place-ships";
 import { Gameboard } from "./gameboard-class";
+import { gameLoop } from "./game-logic";
 
 const container = document.querySelector(".container");
-const gameBoardContainer = document.querySelector(".gameboard-container");
 const headerContainer = document.querySelector(".header-container");
 const gameAreaContainer = document.querySelector(".game-area-container");
 
-// function to print the battleship gameboard
-// passing in a humanPlayer as an parameter
-function printGameboard(player) {
+// TODO:
+// - create a blank 10 x 10 grid that takes the current player (human or computer)
+// as parameters
+// - return the gameboard-container (the DOM node)
+
+function printBlankGrid() {
+  const blankGameGrid = document.createElement("div");
+  blankGameGrid.classList.add("blank-game-grid");
   const gridSize = 10;
 
   for (let i = 0; i < gridSize; i++) {
     const row = document.createElement("div");
     row.classList.add("row");
-
     for (let j = 0; j < gridSize; j++) {
       const square = document.createElement("div");
       square.classList.add("square");
-      row.appendChild(square);
-      square.addEventListener("dragover", (e) => {
-        e.preventDefault();
-      });
       square.dataset.coordinate = `${String.fromCharCode(97 + i)}${j + 1}`;
-
-      square.addEventListener("drop", (e) => {
-        const coordinate = e.target.dataset.coordinate;
-        const data = JSON.parse(e.dataTransfer.getData("text/plain"));
-        const { name, orientation } = data;
-        const ship = player.ships.find((obj) => {
-          return obj.name === name;
-        });
-        console.log(coordinate, ship, orientation);
-        player.gameboard.placeShip(coordinate, ship, orientation);
-        console.log(player.gameboard.position);
-      });
-
+      row.appendChild(square);
       if (j === 0) {
         const labelCellLetters = document.createElement("div");
         labelCellLetters.classList.add("labels");
@@ -48,9 +36,9 @@ function printGameboard(player) {
         row.prepend(labelCellLetters);
       }
     }
-    gameBoardContainer.appendChild(row);
-    container.appendChild(gameBoardContainer);
+    blankGameGrid.appendChild(row);
   }
+
   const numRow = document.createElement("div");
   numRow.classList.add("row");
   const emptyCell = document.createElement("div");
@@ -63,8 +51,87 @@ function printGameboard(player) {
     numRow.appendChild(labelCellNumbers);
   }
   numRow.prepend(emptyCell);
-  gameBoardContainer.appendChild(numRow);
-  gameAreaContainer.appendChild(gameBoardContainer);
+  blankGameGrid.appendChild(numRow);
+  gameAreaContainer.appendChild(blankGameGrid);
+  return blankGameGrid;
+}
+
+// TODO:
+//   1. Call printBlankGrid() to get the grid
+//   2. Query the squares within that returned grid and add dragover and drop listeners
+//   3. Append the grid to gameAreaContainer
+function printGameboard(player) {
+  const initialGameGrid = printBlankGrid();
+  const gameGridSquares = initialGameGrid.querySelectorAll(".square");
+
+  const shipArr = player.ships;
+  const shipSpaceTotal = shipArr.reduce((acc, curr) => {
+    return acc + curr.length;
+  }, 0);
+
+  for (const square of gameGridSquares) {
+    square.addEventListener("dragover", (e) => {
+      e.preventDefault();
+    });
+
+    square.addEventListener("drop", (e) => {
+      const coordinate = e.target.dataset.coordinate;
+      const data = JSON.parse(e.dataTransfer.getData("text/plain"));
+      const { name } = data;
+      const ship = player.ships.find((obj) => {
+        return obj.name === name;
+      });
+
+      try {
+        player.gameboard.placeShip(coordinate, ship);
+        const occupiedCoordinates = [];
+        let coordinateNumber = parseInt(coordinate.slice(1));
+        if (ship.orientation === "horizontal") {
+          for (let k = 0; k < ship.length; k++) {
+            let occupiedCoordinate = coordinate[0] + (coordinateNumber + k);
+            occupiedCoordinates.push(occupiedCoordinate);
+          }
+        } else if (ship.orientation === "vertical") {
+          let coordinateUnicode = coordinate.charCodeAt(0);
+          for (let l = 0; l < ship.length; l++) {
+            let occupiedCoordinate =
+              String.fromCharCode(coordinateUnicode + l) + coordinateNumber;
+            occupiedCoordinates.push(occupiedCoordinate);
+          }
+        }
+
+        for (const coord of occupiedCoordinates) {
+          let coordTurnRed = initialGameGrid.querySelector(
+            `[data-coordinate=${coord}]`,
+          );
+          coordTurnRed.classList.add("highlight-red");
+        }
+
+        let placedShip = document.querySelector(
+          `[data-ship-name=${ship.name}]`,
+        );
+        if (placedShip) {
+          placedShip.setAttribute("draggable", "false");
+          placedShip.classList.add("placed");
+        }
+
+        if (shipSpaceTotal === player.gameboard.position.size) {
+          const strToRemove = document.querySelector(
+            ".personal-string-container",
+          );
+          const shipTrayToRemove = document.querySelector(
+            ".ship-outer-container",
+          );
+          shipTrayToRemove.classList.add("hidden");
+          strToRemove.classList.add("hidden");
+
+          gameLoop();
+        }
+      } catch (error) {
+        alert(error.message);
+      }
+    });
+  }
 }
 
 // callback function for playerGreeting
@@ -80,11 +147,18 @@ function returnPlayer(playerNameInput) {
   headerContainer.appendChild(personalStrContainer);
   placeShips(humanPlayer);
   printGameboard(humanPlayer);
-  console.log(humanPlayer);
 
   return humanPlayer;
-  // TODO: Hide the personalStr AFTER the player places their ships
 }
+
+const setupComputerBoard = new Gameboard();
+
+const computerPlayer = new ComputerPlayer(
+  "Computer Player",
+  setupComputerBoard,
+);
+
+computerPlayer.computerGameboard();
 
 // passing in returnPlayer to playerGreeting for callback
 // returnPlayer will grab its arguement from playerGreeting in the player-register.js module
