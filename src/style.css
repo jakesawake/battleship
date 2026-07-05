@@ -1,3 +1,5 @@
+@charset 'UTF-8';
+
 html {
   background-image: linear-gradient(to bottom, #373b44, #4286f4);
 }
@@ -114,6 +116,14 @@ svg {
 .ship-outer-container {
   display: flex;
   flex-direction: column;
+}
+
+.hit::before {
+  content: "\1F525";
+}
+
+.miss::before {
+  content: "\274C";
 }
 
 /* removable highlight class for occupied ships on the gameboard*/
