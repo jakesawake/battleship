@@ -64,6 +64,11 @@ class Gameboard {
   // TODO: add a method like allShipsSunk() to determine if all ships are sunk
   // in order to declare a winner. Since gameBoard has all the ship references in
   // the position map
+  allShipsSunk(player) {
+    if (this.position.size === this.attacked.length) {
+      return alert(`${player} has sunk all enemy ships!`);
+    }
+  }
 }
 
 export { Gameboard };
