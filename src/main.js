@@ -9,14 +9,33 @@ const container = document.querySelector(".container");
 const headerContainer = document.querySelector(".header-container");
 const gameAreaContainer = document.querySelector(".game-area-container");
 
-// TODO:
-// - create a blank 10 x 10 grid that takes the current player (human or computer)
-// as parameters
-// - return the gameboard-container (the DOM node)
+// passing in returnPlayer to playerGreeting for callback
+// returnPlayer will grab its arguement from playerGreeting in the player-register.js module
+playerGreeting(returnPlayer);
 
-function printBlankGrid() {
+let humanPlayer;
+
+// callback function for playerGreeting
+// takes playerNameInput.value to create a new Player object
+// also displays personalized string to tell the player to place their ships
+function returnPlayer(playerNameInput) {
+  const humanGameboard = new Gameboard();
+  humanPlayer = new Player(playerNameInput, humanGameboard);
+  const personalStr = `Thanks for playing ${humanPlayer.name}, please proceed with placing your ships for battle`;
+  const personalStrContainer = document.createElement("div");
+  personalStrContainer.classList.add("personal-string-container");
+  personalStrContainer.textContent = personalStr;
+  headerContainer.appendChild(personalStrContainer);
+  placeShips(humanPlayer);
+  printGameboard(humanPlayer);
+
+  return humanPlayer;
+}
+
+function printBlankGrid(boardID) {
   const blankGameGrid = document.createElement("div");
-  blankGameGrid.classList.add("blank-game-grid");
+  blankGameGrid.id = `${boardID}`;
+
   const gridSize = 10;
 
   for (let i = 0; i < gridSize; i++) {
@@ -25,6 +44,9 @@ function printBlankGrid() {
     for (let j = 0; j < gridSize; j++) {
       const square = document.createElement("div");
       square.classList.add("square");
+      square.style.display = "flex";
+      square.style.justifyContent = "center";
+      square.style.alignItems = "center";
       square.dataset.coordinate = `${String.fromCharCode(97 + i)}${j + 1}`;
       row.appendChild(square);
       if (j === 0) {
@@ -56,12 +78,10 @@ function printBlankGrid() {
   return blankGameGrid;
 }
 
-// TODO:
-//   1. Call printBlankGrid() to get the grid
-//   2. Query the squares within that returned grid and add dragover and drop listeners
-//   3. Append the grid to gameAreaContainer
+// function that prints the gameboard and attaches event listeners for the
+// squares dragging/dropping the ships
 function printGameboard(player) {
-  const initialGameGrid = printBlankGrid();
+  const initialGameGrid = printBlankGrid("human-gameboard");
   const gameGridSquares = initialGameGrid.querySelectorAll(".square");
 
   const shipArr = player.ships;
@@ -125,30 +145,14 @@ function printGameboard(player) {
           shipTrayToRemove.classList.add("hidden");
           strToRemove.classList.add("hidden");
 
-          gameLoop();
+          gameLoop(printComputerGameboard, humanPlayer, computerPlayer);
+          console.log(computerPlayer.gameboard.attacked);
         }
       } catch (error) {
         alert(error.message);
       }
     });
   }
-}
-
-// callback function for playerGreeting
-// takes playerNameInput.value to create a new Player object
-// also displays personalized string to tell the player to place their ships
-function returnPlayer(playerNameInput) {
-  const humanGameboard = new Gameboard();
-  const humanPlayer = new Player(playerNameInput, humanGameboard);
-  const personalStr = `Thanks for playing ${humanPlayer.name}, please proceed with placing your ships for battle`;
-  const personalStrContainer = document.createElement("div");
-  personalStrContainer.classList.add("personal-string-container");
-  personalStrContainer.textContent = personalStr;
-  headerContainer.appendChild(personalStrContainer);
-  placeShips(humanPlayer);
-  printGameboard(humanPlayer);
-
-  return humanPlayer;
 }
 
 const setupComputerBoard = new Gameboard();
@@ -160,8 +164,55 @@ const computerPlayer = new ComputerPlayer(
 
 computerPlayer.computerGameboard();
 
-// passing in returnPlayer to playerGreeting for callback
-// returnPlayer will grab its arguement from playerGreeting in the player-register.js module
-playerGreeting(returnPlayer);
+function printComputerGameboard(humanPlayer, computerPlayer) {
+  const opponentGameboard = printBlankGrid("computer-gameboard");
+  const opponentGameboardSquares =
+    opponentGameboard.querySelectorAll(".square");
 
-export { container, gameAreaContainer };
+  for (const square of opponentGameboardSquares) {
+    square.addEventListener("click", (e) => {
+      const clickedSquare = e.target;
+      humanPlayer.playerAttack(
+        computerPlayer.gameboard,
+        clickedSquare.dataset.coordinate,
+      );
+
+      console.log(
+        `Computer Maps: ${computerPlayer.gameboard.attacked}, ${computerPlayer.gameboard.missed}`,
+      );
+
+      if (
+        computerPlayer.gameboard.attacked.includes(
+          clickedSquare.dataset.coordinate,
+        )
+      ) {
+        clickedSquare.classList.add("hit");
+      } else if (
+        computerPlayer.gameboard.missed.includes(
+          clickedSquare.dataset.coordinate,
+        )
+      ) {
+        clickedSquare.classList.add("miss");
+      }
+
+      // FIX: lastAttackedCoord gets the last attacked coordinate, what if the computer misses? leaving lastAttackedCoord stale/wrong
+      // handle this edge case
+      computerPlayer.computerAttack(humanPlayer.gameboard);
+      console.log(
+        `Human Maps: ${humanPlayer.gameboard.attacked}, ${humanPlayer.gameboard.missed}`,
+      );
+      const lastAttackedCoord = humanPlayer.gameboard.attacked.at(-1);
+      const attackedSquare = document.querySelector(
+        `#human-gameboard [data-coordinate=${lastAttackedCoord}]`,
+      );
+      if (humanPlayer.gameboard.attacked.includes(lastAttackedCoord)) {
+        attackedSquare.classList.add("hit");
+        attackedSquare.style.backgroundColor = "black";
+      } else if (humanPlayer.gameboard.missed.includes(lastAttackedCoord)) {
+        attackedSquare.classList.add("miss");
+      }
+    });
+  }
+}
+
+export { container, gameAreaContainer, printComputerGameboard };
