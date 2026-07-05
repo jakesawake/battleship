@@ -14,6 +14,7 @@ class Player {
       new Ship("Destroyer", 2),
     ];
   }
+
   playerAttack(gameBoard, coordinates) {
     gameBoard.receiveAttack(coordinates);
   }
