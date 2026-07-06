@@ -15,6 +15,9 @@ playerGreeting(returnPlayer);
 
 let humanPlayer;
 
+const controller = new AbortController();
+const { signal } = controller;
+
 // callback function for playerGreeting
 // takes playerNameInput.value to create a new Player object
 // also displays personalized string to tell the player to place their ships
@@ -90,17 +93,24 @@ function printGameboard(player) {
   }, 0);
 
   for (const square of gameGridSquares) {
-    square.addEventListener("dragover", (e) => {
-      e.preventDefault();
-    });
+    square.addEventListener(
+      "dragover",
+      (e) => {
+        e.preventDefault();
+      },
+      { signal },
+    );
 
     square.addEventListener("drop", (e) => {
       const coordinate = e.target.dataset.coordinate;
       const data = JSON.parse(e.dataTransfer.getData("text/plain"));
       const { name } = data;
-      const ship = player.ships.find((obj) => {
-        return obj.name === name;
-      });
+      const ship = player.ships.find(
+        (obj) => {
+          return obj.name === name;
+        },
+        { signal },
+      );
 
       try {
         player.gameboard.placeShip(coordinate, ship);
@@ -146,7 +156,6 @@ function printGameboard(player) {
           strToRemove.classList.add("hidden");
 
           gameLoop(printComputerGameboard, humanPlayer, computerPlayer);
-          console.log(computerPlayer.gameboard.attacked);
         }
       } catch (error) {
         alert(error.message);
@@ -170,48 +179,56 @@ function printComputerGameboard(humanPlayer, computerPlayer) {
     opponentGameboard.querySelectorAll(".square");
 
   for (const square of opponentGameboardSquares) {
-    square.addEventListener("click", (e) => {
-      const clickedSquare = e.target;
-      humanPlayer.playerAttack(
-        computerPlayer.gameboard,
-        clickedSquare.dataset.coordinate,
-      );
-
-      console.log(
-        `Computer Maps: ${computerPlayer.gameboard.attacked}, ${computerPlayer.gameboard.missed}`,
-      );
-
-      if (
-        computerPlayer.gameboard.attacked.includes(
+    square.addEventListener(
+      "click",
+      (e) => {
+        const clickedSquare = e.target;
+        humanPlayer.playerAttack(
+          computerPlayer.gameboard,
           clickedSquare.dataset.coordinate,
-        )
-      ) {
-        clickedSquare.classList.add("hit");
-      } else if (
-        computerPlayer.gameboard.missed.includes(
-          clickedSquare.dataset.coordinate,
-        )
-      ) {
-        clickedSquare.classList.add("miss");
-      }
+        );
 
-      // FIX: lastAttackedCoord gets the last attacked coordinate, what if the computer misses? leaving lastAttackedCoord stale/wrong
-      // handle this edge case
-      computerPlayer.computerAttack(humanPlayer.gameboard);
-      console.log(
-        `Human Maps: ${humanPlayer.gameboard.attacked}, ${humanPlayer.gameboard.missed}`,
-      );
-      const lastAttackedCoord = humanPlayer.gameboard.attacked.at(-1);
-      const attackedSquare = document.querySelector(
-        `#human-gameboard [data-coordinate=${lastAttackedCoord}]`,
-      );
-      if (humanPlayer.gameboard.attacked.includes(lastAttackedCoord)) {
-        attackedSquare.classList.add("hit");
-        attackedSquare.style.backgroundColor = "black";
-      } else if (humanPlayer.gameboard.missed.includes(lastAttackedCoord)) {
-        attackedSquare.classList.add("miss");
-      }
-    });
+        if (
+          computerPlayer.gameboard.attacked.includes(
+            clickedSquare.dataset.coordinate,
+          )
+        ) {
+          clickedSquare.classList.add("hit");
+        } else if (
+          computerPlayer.gameboard.missed.includes(
+            clickedSquare.dataset.coordinate,
+          )
+        ) {
+          clickedSquare.classList.add("miss");
+        }
+
+        let coordinate = computerPlayer.computerAttack(humanPlayer.gameboard);
+
+        const attackedSquare = document.querySelector(
+          `#human-gameboard [data-coordinate=${coordinate}]`,
+        );
+
+        if (humanPlayer.gameboard.missed.includes(coordinate)) {
+          attackedSquare.classList.add("miss");
+        } else if (humanPlayer.gameboard.attacked.includes(coordinate)) {
+          attackedSquare.classList.add("hit");
+        }
+        if (humanPlayer.gameboard.allShipsSunk()) {
+          const winningMessage = document.createElement("div");
+          winningMessage.classList.add("winning-message");
+          winningMessage.textContent = `${humanPlayer.name} has lost all their ships!`;
+          gameAreaContainer.appendChild(winningMessage);
+          controller.abort();
+        } else if (computerPlayer.gameboard.allShipsSunk()) {
+          const winningMessage = document.createElement("div");
+          winningMessage.classList.add("winning-message");
+          winningMessage.textContent = `${humanPlayer.name} has sunk all enemy ships!`;
+          gameAreaContainer.appendChild(winningMessage);
+          controller.abort();
+        }
+      },
+      { signal },
+    );
   }
 }
 
