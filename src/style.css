@@ -135,6 +135,10 @@ svg {
   opacity: 0.2;
 }
 
+.winning-message {
+  font-size: 5rem;
+}
+
 /* NOTE: moving hidden class to the very bottom of the css file
    so that When two CSS rules have equal specificity, the browser applies the one that
    appears last in the stylesheet. It's called the cascade — that's the "C" in CSS
