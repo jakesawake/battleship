@@ -60,6 +60,7 @@ class ComputerPlayer extends Player {
       coordinates = this.#generateCoordinate();
     }
     gameBoard.receiveAttack(coordinates);
+    return coordinates;
   }
 }
 
