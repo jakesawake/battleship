@@ -20,8 +20,6 @@ class Player {
   }
 }
 
-// separate player class for the computer that inherits from Player class above
-// the computer player should have a method that generates random coordinates
 class ComputerPlayer extends Player {
   #randomLetter() {
     return String.fromCharCode(97 + Math.floor(Math.random() * 10));
@@ -42,6 +40,7 @@ class ComputerPlayer extends Player {
       while (true) {
         try {
           let randomlyGeneratedCoord = this.#generateCoordinate();
+          ship.orientation = Math.random() < 0.5 ? "horizontal" : "vertical";
           this.gameboard.placeShip(randomlyGeneratedCoord, ship);
           break;
         } catch (error) {
